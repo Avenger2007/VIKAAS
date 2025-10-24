@@ -1,0 +1,356 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Schools using VIKAAS
+model School {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  city        String
+  state       String
+  pincode     String?
+  phone       String?
+  email       String   @unique
+  type        SchoolType @default(PRIVATE)
+  status      SchoolStatus @default(ACTIVE)
+  subscription Subscription?
+  admins      SchoolAdmin[]
+  teachers    Teacher[]
+  students    Student[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Subscription plans for schools
+model Subscription {
+  id           String           @id @default(cuid())
+  schoolId     String           @unique
+  plan         SubscriptionPlan
+  status       SubscriptionStatus
+  startDate    DateTime
+  endDate      DateTime
+  maxStudents  Int?
+  currentCount Int              @default(0)
+  pricePerStudent Float         @default(75.0)
+  school       School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+// Payment records
+model Payment {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  amount         Float
+  currency       String   @default("INR")
+  status         PaymentStatus
+  paymentMethod  String?
+  transactionId  String?
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// School administrators
+model SchoolAdmin {
+  id       String   @id @default(cuid())
+  schoolId String
+  userId   String   @unique
+  role     AdminRole @default(ADMIN)
+  school   School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Teachers in schools
+model Teacher {
+  id        String   @id @default(cuid())
+  schoolId  String
+  userId    String   @unique
+  employeeId String?
+  subjects  String?  // JSON string array of subjects taught
+  classes   String?  // JSON string array of classes taught
+  status    TeacherStatus @default(ACTIVE)
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  observations TeacherObservation[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Students in schools
+model Student {
+  id           String    @id @default(cuid())
+  schoolId     String
+  userId       String    @unique
+  rollNumber   String?
+  classGrade   Int       // Class 6-12
+  section      String?
+  admissionNo  String?
+  dateOfBirth  DateTime?
+  gender       Gender?
+  parentEmail  String?
+  parentPhone  String?
+  status       StudentStatus @default(ACTIVE)
+  school       School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploads      StudentUpload[]
+  talentAnalysis TalentAnalysis[]
+  careerMatches CareerMatch[]
+  observations TeacherObservation[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// Student uploads (artwork, projects, essays, videos)
+model StudentUpload {
+  id          String        @id @default(cuid())
+  studentId   String
+  title       String
+  description String?
+  type        UploadType
+  category    String?       // e.g., "Drawing/Sketch", "Painting", "Digital Art"
+  subject     String?       // e.g., "Architecture", "Nature", "Science"
+  classWhenCreated Int?     // Class when the work was created
+  fileUrl     String
+  fileName    String
+  fileSize    Int
+  mimeType    String
+  status      UploadStatus @default(UPLOADED)
+  analysis    UploadAnalysis?
+  student     Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+// AI analysis of uploads
+model UploadAnalysis {
+  id                String   @id @default(cuid())
+  uploadId          String   @unique
+  talentMarkers     Json     // AI-detected talent markers with scores
+  insights          String?  // AI-generated insights
+  careerImplications Json?   // Career recommendations based on this upload
+  confidence        Float?   // AI confidence score
+  processingTime    Int?     // Processing time in milliseconds
+  upload            StudentUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Teacher observations about students
+model TeacherObservation {
+  id          String           @id @default(cuid())
+  teacherId   String
+  studentId   String
+  type        ObservationType
+  content     String           // Text content or voice transcription
+  tags        String?          // JSON string array of behavioral tags
+  context     String?          // Context of observation (e.g., "Class participation", "Project work")
+  voiceNoteUrl String?         // URL to voice recording
+  sentiment   Sentiment?       // AI-detected sentiment
+  teacher     Teacher          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+// Comprehensive talent analysis for students
+model TalentAnalysis {
+  id                String   @id @default(cuid())
+  studentId         String
+  analysisDate      DateTime @default(now())
+  overallScore      Float    // Overall talent score
+  dimensions        Json     // 8 talent dimensions with scores
+  strengths         String?  // JSON string array of identified strengths
+  improvementAreas  String?  // JSON string array of areas for improvement
+  growthTrajectory  Json?    // Historical growth data
+  recommendations   Json?    // Personalized recommendations
+  confidence        Float?   // AI confidence score
+  dataPoints        Int      @default(0) // Number of data points analyzed
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Career path recommendations
+model CareerMatch {
+  id          String   @id @default(cuid())
+  studentId   String
+  careerName  String
+  category    String   // e.g., "STEM", "Arts", "Commerce"
+  matchScore  Float    // 0-100 match percentage
+  keySkills   String?  // JSON string array of matching skills
+  description String?  // Career description
+  educationPath String? // Required education
+  salaryRange String?  // Expected salary range
+  demand      DemandLevel @default(MEDIUM)
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// User accounts (all user types)
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  phone        String?
+  avatar       String?
+  role         UserRole  @default(STUDENT)
+  status       UserStatus @default(ACTIVE)
+  emailVerified Boolean   @default(false)
+  lastLoginAt  DateTime?
+  preferences  Json?     // User preferences
+  schoolAdmin  SchoolAdmin?
+  teacher      Teacher?
+  student      Student?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// System audit logs
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // Action performed
+  resource  String   // Resource affected
+  details   Json?    // Additional details
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+// System settings
+model SystemSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Enums
+enum SchoolType {
+  PUBLIC
+  PRIVATE
+  GOVERNMENT
+  CHARTER
+}
+
+enum SchoolStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum SubscriptionPlan {
+  TRIAL
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+  PRINCIPAL
+}
+
+enum TeacherStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+  TRANSFERRED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum UploadType {
+  ARTWORK
+  PROJECT
+  ESSAY
+  VIDEO
+  PRESENTATION
+  OTHER
+}
+
+enum UploadStatus {
+  UPLOADED
+  PROCESSING
+  ANALYZED
+  FAILED
+}
+
+enum ObservationType {
+  TEXT
+  VOICE
+  BEHAVIORAL
+  ACADEMIC
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum DemandLevel {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  SCHOOL_ADMIN
+  SYSTEM_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
