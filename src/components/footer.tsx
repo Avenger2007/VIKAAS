@@ -230,28 +230,10 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              © 2024 VIKAAS. All rights reserved. Made with{' '}
+              © 2025 VIKAAS. All rights reserved. Made with{' '}
               <Heart className="h-4 w-4 text-red-500 inline mx-1" />
               in India.
             </motion.p>
-            
-            <motion.div 
-              className="flex items-center space-x-6 mt-4 md:mt-0"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <Badge variant="outline" className="border-gray-700 text-gray-400">
-                NEP 2020 Compliant
-              </Badge>
-              <Badge variant="outline" className="border-gray-700 text-gray-400">
-                ISO 27001 Certified
-              </Badge>
-              <Badge variant="outline" className="border-gray-700 text-gray-400">
-                GDPR Compliant
-              </Badge>
-            </motion.div>
           </div>
         </div>
       </div>
