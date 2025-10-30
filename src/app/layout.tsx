@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   authors: [{ name: "VIKAAS Team" }],
   icons: {
     icon: "/logo.png",
+    apple: "/logo.png",
+    shortcut: "/logo.png"
   },
   openGraph: {
     title: "VIKAAS - AI-Powered Talent Discovery",
