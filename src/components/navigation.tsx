@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -67,11 +68,18 @@ export default function Navigation() {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 group">
               <motion.div 
-                className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center transition-transform duration-200 hover:scale-110"
+                className="w-10 h-10 relative flex items-center justify-center transition-transform duration-200 hover:scale-110"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ duration: 0.2 }}
               >
-                <GraduationCap className="h-6 w-6 text-white" />
+                <Image 
+                  src="/logo.png"
+                  alt="VIKAAS Logo"
+                  width={40}
+                  height={40}
+                  priority
+                  className="object-contain"
+                />
               </motion.div>
               <span className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                 VIKAAS

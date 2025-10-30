@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   keywords: ["VIKAAS", "NEP 2020", "Indian education", "talent discovery", "AI in education", "student assessment", "holistic development"],
   authors: [{ name: "VIKAAS Team" }],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.png",
   },
   openGraph: {
     title: "VIKAAS - AI-Powered Talent Discovery",
