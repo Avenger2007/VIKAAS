@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { InfoBanner } from '@/components/ui/info-banner'
 import { 
   GraduationCap, 
   Mail, 
@@ -20,7 +22,7 @@ import {
 const footerLinks = {
   product: [
     { name: 'Features', href: '/features' },
-    { name: 'Pricing', href: '/pricing' },
+    { name: 'Pricing', href: '#', action: 'pricing' },
     { name: 'API', href: '/api' },
     { name: 'Documentation', href: '/docs' }
   ],
@@ -32,7 +34,7 @@ const footerLinks = {
   ],
   support: [
     { name: 'Help Center', href: '/help' },
-    { name: 'Contact Us', href: '/contact' },
+    { name: 'Contact Us', href: '#', action: 'contact' },
     { name: 'Status', href: '/status' },
     { name: 'Terms of Service', href: '/terms' }
   ],
@@ -52,6 +54,9 @@ const socialLinks = [
 ]
 
 export default function Footer() {
+  const [showPricingBanner, setShowPricingBanner] = useState(false)
+  const [showContactBanner, setShowContactBanner] = useState(false)
+
   return (
     <footer className="bg-gray-900 text-white">
       {/* Main Footer Content */}
@@ -138,12 +143,24 @@ export default function Footer() {
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.name}>
-                  <Link 
-                    href={link.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    {link.name}
-                  </Link>
+                  {link.action ? (
+                    <button 
+                      onClick={() => {
+                        if (link.action === 'pricing') setShowPricingBanner(true);
+                        if (link.action === 'contact') setShowContactBanner(true);
+                      }}
+                      className="text-gray-300 hover:text-white transition-colors duration-200"
+                    >
+                      {link.name}
+                    </button>
+                  ) : (
+                    <Link 
+                      href={link.href}
+                      className="text-gray-300 hover:text-white transition-colors duration-200"
+                    >
+                      {link.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -182,12 +199,24 @@ export default function Footer() {
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
-                  <Link 
-                    href={link.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    {link.name}
-                  </Link>
+                  {link.action ? (
+                    <button 
+                      onClick={() => {
+                        if (link.action === 'pricing') setShowPricingBanner(true);
+                        if (link.action === 'contact') setShowContactBanner(true);
+                      }}
+                      className="text-gray-300 hover:text-white transition-colors duration-200"
+                    >
+                      {link.name}
+                    </button>
+                  ) : (
+                    <Link 
+                      href={link.href}
+                      className="text-gray-300 hover:text-white transition-colors duration-200"
+                    >
+                      {link.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -237,6 +266,20 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      <InfoBanner
+        open={showPricingBanner}
+        onClose={() => setShowPricingBanner(false)}
+        title="Coming Soon"
+        description="Our pricing details will be available shortly. Stay tuned for our competitive and flexible pricing plans!"
+      />
+
+      <InfoBanner
+        open={showContactBanner}
+        onClose={() => setShowContactBanner(false)}
+        title="Contact Form Coming Soon"
+        description="Our contact form will be available shortly. Please check back soon to get in touch with us!"
+      />
     </footer>
   )
 }
